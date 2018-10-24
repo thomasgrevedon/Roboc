@@ -1,5 +1,6 @@
 import copy
 import os
+import pickle
 
 class Labyrinth:
 
@@ -29,6 +30,11 @@ class Labyrinth:
             for object in dict_copy_lines[position]:
                 map_to_print += object
         return map_to_print
+
+    def __getstate__(self):
+        dict_attr = dict(self.__dict__)
+        dict_attr["lines"] = self.lines
+        return dict_attr
 
     def check_in_map(self, move_direction, position, game):
         self.robot_initial_position = dict(self.robot_position)
@@ -142,5 +148,40 @@ class Game:
             self.maps.append(file)
         return i
 
-    def quit(self):
-        print("We are going to leave and save")
+    def unpack_map(self, map_name):
+        try:
+            with open("map_history", "rb") as file:
+                mon_unpickler = pickle.Unpickler(file)
+                dictionary = mon_unpickler.load()
+                if map_name in dictionary:
+                    map = dictionary[map_name]
+                    on_going_party = True
+                    return map, on_going_party
+                else:
+                    map = ""
+                    on_going_party = False
+                    return map, on_going_party
+        except FileNotFoundError:
+            with open("map_history", "wb") as file:
+                mon_pickle = pickle.Pickler(file)
+                dictionary = {}
+                mon_pickle.dump(dictionary)
+                map = ""
+                on_going_party = False
+                return map, on_going_party
+
+    def quit(self, map_name, win, map):
+        if win == False:
+            with open("map_history", "wb") as file:
+                my_pickle = pickle.Pickler(file)
+                dictionary = {}
+                dictionary[map_name] = map
+                my_pickle.dump(dictionary)
+                print("We are going to leave and save")
+        else:
+            with open("map_history", "wb") as file:
+                my_pickle = pickle.Pickler(file)
+                dictionary = {}
+                if map_name in dictionary:
+                    del dictionary[map_name]
+                my_pickle.dump(dictionary)

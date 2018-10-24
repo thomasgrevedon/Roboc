@@ -18,8 +18,15 @@ while valid_entry != True:
     try:
         requested_map = int(requested_map)
         assert requested_map < (number_of_map_avilables) and requested_map > 0
-        map = "cartes/" + game.maps[requested_map - 1]
-        map = Labyrinth(map)
+        map_name = "cartes/" + game.maps[requested_map - 1]
+        map, on_going_party = game.unpack_map(map_name)
+        if on_going_party:
+            continue_play = str(input("Type \"y\" if you want to continue playing"
+            " or press anything else if you want to start a new party: "))[:1].lower()
+            if continue_play != "y":
+                map = Labyrinth(map_name)
+        else:
+            map = Labyrinth(map_name)
         robot = Robot(map.robot_position)
         valid_entry = True
     except ValueError:
@@ -75,4 +82,4 @@ while exit != "q" and game.win == False:
         if game.win == False:
             exit = str(input("Press q to quit and save or anything else (like enter) to continue: "))[:1].lower()
 
-game.quit()
+game.quit(map_name, game.win, map)
